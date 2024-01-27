@@ -42,6 +42,11 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			if (!tex_path.ends_with(target_texture))
 				continue;
 			modified = true;
+			if (element.contains("delete") && element["delete"]) {
+				// delete this fkin mesh bro
+				nif.DeleteShape(shape);
+				break;
+			}
 
 			std::string empty_path = "";
 			auto diffuse = tex_path + ".dds";
@@ -84,7 +89,12 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 					// revert to default shader type, remove flags used in other types
 					bslsp->bslspShaderType = BSLSP_DEFAULT;
 					bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
-
+					bslsp->shaderFlags1 &= ~SLSF1_FACEGEN_RGB_TINT;
+					bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
+					bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
+					bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
+					bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
+					bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
 
 					bslsp->shaderFlags2 |= SLSF2_UNUSED01; // "PBR FLAG"
 					// pbr shader switch
@@ -103,6 +113,15 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 					else {
 						bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
 					}
+					if (element.contains("vertex_colors")) {
+						shape->SetVertexColors(element["vertex_colors"]);
+						if (element["vertex_colors"])
+							bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
+						else
+							bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
+					}
+
+
 					// texture scale values
 					if (element.contains("specular_level")) {
 						shader->SetGlossiness(element["specular_level"]);
@@ -141,19 +160,21 @@ int main()
 		cout << "Error, quitting!" << endl;
 		return 1;
 	}
-	//create_directory(path(".\\output"));
+	auto save_options = NifSaveOptions();
+	save_options.optimize = false;
+	save_options.sortBlocks = false;
 	for (recursive_directory_iterator i("."), end; i != end; ++i) {
 		if (i->path().string().starts_with(".\\output"))
 			continue;
 		if (!is_directory(i->path()) && i->path().extension().compare(".nif") == 0) {
-			cout << "Processing " << i->path() << "\n";
+			//cout << "Processing " << i->path() << "\n";
 			NifFile nif;
 			if (nif.Load(i->path()) == 0) {
 				if (set_pbr_textures(nif, j)) {
 					cout << "Modified " << i->path() << "\n";
 					auto out_path = path(".\\output") / path(i->path().lexically_normal());
 					create_directories(out_path.parent_path());
-					if (nif.Save(out_path) != 0) {
+					if (nif.Save(out_path, save_options) != 0) {
 						cout << "Error saving " << out_path << "\n";
 					}
 				}
