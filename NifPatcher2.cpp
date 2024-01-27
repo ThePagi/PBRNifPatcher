@@ -26,20 +26,25 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 	auto modified = false;
 	for (const auto shape : nif.GetShapes())
 	{
+		auto paths = nif.GetTexturePathRefs(shape);
+		if (paths.size() < 1)
+			continue;
+		const auto shader = nif.GetShader(shape);
+		if (!shader)
+			continue;
+		const auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
+		if (!bslsp)
+			continue;
+		auto tex_path = str_tolower(paths[0].get());
+		if (tex_path.length() < 4)
+			continue;
+		tex_path.pop_back(); // remove ".dds"
+		tex_path.pop_back();
+		tex_path.pop_back();
+		tex_path.pop_back();
 		for (auto& element : settings) {
 			//std::cout << element << '\n';
-			auto target_texture = str_tolower(element["texture"]);
-			auto paths = nif.GetTexturePathRefs(shape);
-			if (paths.size() < 1)
-				continue;
-			auto tex_path = str_tolower(paths[0].get());
-			if (tex_path.length() < 4)
-				continue;
-			tex_path.pop_back(); // remove ".dds"
-			tex_path.pop_back();
-			tex_path.pop_back();
-			tex_path.pop_back();
-			if (!tex_path.ends_with(target_texture))
+			if (!tex_path.ends_with(element["texture"]))
 				continue;
 			modified = true;
 			if (element.contains("delete") && element["delete"]) {
@@ -80,69 +85,60 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				nif.SetTextureSlot(shape, empty_path, 7);
 			}
 
-			const auto shader = nif.GetShader(shape);
-			if (shader)
-			{
-				const auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
-				if (bslsp)
-				{
-					// revert to default shader type, remove flags used in other types
-					bslsp->bslspShaderType = BSLSP_DEFAULT;
-					bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
-					bslsp->shaderFlags1 &= ~SLSF1_FACEGEN_RGB_TINT;
-					bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
-					bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
-					bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
-					bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
-					bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
 
-					bslsp->shaderFlags2 |= SLSF2_UNUSED01; // "PBR FLAG"
-					// pbr shader switch
-					if (element.contains("subsurface_foliage") && element["subsurface_foliage"] && element.contains("subsurface") && element["subsurface"]) {
-						cout << "Error: Subsurface and foliage shader chosen at once, undefined behavior!" << endl;
-					}
-					if (element.contains("subsurface_foliage") && element["subsurface_foliage"]) {
-						bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
-					}
-					else {
-						bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
-					}
-					if (element.contains("subsurface") && element["subsurface"]) {
-						bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
-					}
-					else {
-						bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
-					}
-					if (element.contains("vertex_colors")) {
-						shape->SetVertexColors(element["vertex_colors"]);
-						if (element["vertex_colors"])
-							bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
-						else
-							bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
-					}
+			// revert to default shader type, remove flags used in other types
+			bslsp->bslspShaderType = BSLSP_DEFAULT;
+			bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
+			bslsp->shaderFlags1 &= ~SLSF1_FACEGEN_RGB_TINT;
+			bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
+			bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
+			bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
+			bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
+			bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
+
+			bslsp->shaderFlags2 |= SLSF2_UNUSED01; // "PBR FLAG"
+			// pbr shader switch
+			if (element.contains("subsurface_foliage") && element["subsurface_foliage"] && element.contains("subsurface") && element["subsurface"]) {
+				cout << "Error: Subsurface and foliage shader chosen at once, undefined behavior!" << endl;
+			}
+			if (element.contains("subsurface_foliage") && element["subsurface_foliage"]) {
+				bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
+			}
+			else {
+				bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
+			}
+			if (element.contains("subsurface") && element["subsurface"]) {
+				bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
+			}
+			else {
+				bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
+			}
+			if (element.contains("vertex_colors")) {
+				shape->SetVertexColors(element["vertex_colors"]);
+				if (element["vertex_colors"])
+					bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
+				else
+					bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
+			}
 
 
-					// texture scale values
-					if (element.contains("specular_level")) {
-						shader->SetGlossiness(element["specular_level"]);
-					}
-					if (element.contains("subsurface_color") && element["subsurface_color"].size() > 2) {
-						shader->SetSpecularColor(Vector3(element["subsurface_color"][0], element["subsurface_color"][1], element["subsurface_color"][2]));
-					}
-					if (element.contains("roughness_scale")) {
-						shader->SetSpecularStrength(element["roughness_scale"]);
-					}
-					if (element.contains("subsurface_opacity")) {
-						bslsp->softlighting = element["subsurface_opacity"];
-					}
-					if (element.contains("displacement_scale")) {
-						bslsp->rimlightPower = element["displacement_scale"];
-					}
-				}
+			// texture scale values
+			if (element.contains("specular_level")) {
+				shader->SetGlossiness(element["specular_level"]);
+			}
+			if (element.contains("subsurface_color") && element["subsurface_color"].size() > 2) {
+				shader->SetSpecularColor(Vector3(element["subsurface_color"][0], element["subsurface_color"][1], element["subsurface_color"][2]));
+			}
+			if (element.contains("roughness_scale")) {
+				shader->SetSpecularStrength(element["roughness_scale"]);
+			}
+			if (element.contains("subsurface_opacity")) {
+				bslsp->softlighting = element["subsurface_opacity"];
+			}
+			if (element.contains("displacement_scale")) {
+				bslsp->rimlightPower = element["displacement_scale"];
 			}
 		}
-
-
 	}
 	return modified;
 }
@@ -159,6 +155,9 @@ int main()
 		std::cerr << "Json parse error at byte " << ex.byte << std::endl;
 		cout << "Error, quitting!" << endl;
 		return 1;
+	}
+	for (auto& element : j) {
+		element["texture"] = str_tolower(element["texture"]);
 	}
 	auto save_options = NifSaveOptions();
 	save_options.optimize = false;
