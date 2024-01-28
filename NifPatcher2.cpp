@@ -143,8 +143,9 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 	return modified;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+	bool overwrite = argc > 1 && argv[1][0] == '-' && argv[1][1] == 'o';
 	json j;
 	try {
 		std::ifstream f("settings.json");
@@ -154,6 +155,7 @@ int main()
 	{
 		std::cerr << "Json parse error at byte " << ex.byte << std::endl;
 		cout << "Error, quitting!" << endl;
+		getchar();
 		return 1;
 	}
 	for (auto& element : j) {
@@ -171,7 +173,11 @@ int main()
 			if (nif.Load(i->path()) == 0) {
 				if (set_pbr_textures(nif, j)) {
 					cout << "Modified " << i->path() << "\n";
-					auto out_path = path(".\\output") / path(i->path().lexically_normal());
+					path out_path;
+					if (overwrite)
+						out_path = path(".") / path(i->path().lexically_normal());
+					else
+						out_path = path(".\\output") / path(i->path().lexically_normal());
 					create_directories(out_path.parent_path());
 					if (nif.Save(out_path, save_options) != 0) {
 						cout << "Error saving " << out_path << "\n";
@@ -182,5 +188,7 @@ int main()
 				cout << "Error opening " << i->path() << "\n";
 		}
 	}
+	cout << endl << "Finished!" << endl;
+	getchar();
 	return 0;
 }
