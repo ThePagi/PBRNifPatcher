@@ -52,6 +52,11 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				nif.DeleteShape(shape);
 				break;
 			}
+			if (element.contains("smooth_angle")) {
+				nif.CalcNormalsForShape(shape, true, true, element["smooth_angle"]);
+			}
+			if (element.contains("pbr") && !element["pbr"])
+				continue;
 
 			std::string empty_path = "";
 			auto diffuse = tex_path + ".dds";
