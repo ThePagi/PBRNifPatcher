@@ -16,3 +16,9 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the WIP True PBR
 * Parallax (height, displacement): texturename_p.dds
 * RMAOS (roughness, metallic, ambient oclusion, specular): texturename_rmaos.dds
 * Subsurface color: texturename_s.dds
+
+# Additional settings
+* "pbr": false -> only does non-pbr modifications (as below)
+* "vertex_colors": true/false -> enable or disable vertex colors, useful if the mesh used vertex colors to change the colors of the old textures
+* "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
+* "delete": true -> removes the matched mesh, useful for example for ugly decals that even PBR cannot save
