@@ -7,3 +7,12 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the WIP True PBR
 * Place the settings.json file in the same folder as the executable. Place your .nif files in the same folder or any subfolders.
 * Run the executable. The modified .nif files will appear in an "output" folder. You can specify the -o parameter to override the original files, but this is not recommended -- as of now, even in Mod Organizer 2 it OVERWRITES THE ORIGINAL FILES instead of placing them into the overwrite folder.
 * You can check NifPatcher2.cpp if you are unsure about the program logic. 
+
+# Texture paths
+* Texture paths are made to follow Skyrim naming as much as possible. The path for diffuse texture remains the same, other textures have a _suffix.
+* Diffuse: texturename.dds
+* Normal: texturename_n.dds
+* Emissive (glow): texturename_g.dds
+* Parallax (height, displacement): texturename_p.dds
+* RMAOS (roughness, metallic, ambient oclusion, specular): texturename_rmaos.dds
+* Subsurface color: texturename_s.dds
