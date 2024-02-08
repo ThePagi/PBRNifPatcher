@@ -52,6 +52,18 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				nif.DeleteShape(shape);
 				break;
 			}
+			if (element.contains("smooth_angle")) {
+				nif.CalcNormalsForShape(shape, true, true, element["smooth_angle"]);
+			}
+			if (element.contains("vertex_colors")) {
+				shape->SetVertexColors(element["vertex_colors"]);
+				if (element["vertex_colors"])
+					bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
+				else
+					bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
+			}
+			if (element.contains("pbr") && !element["pbr"])
+				continue;
 
 			std::string empty_path = "";
 			auto diffuse = tex_path + ".dds";
@@ -113,15 +125,7 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			else {
 				bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
 			}
-			if (element.contains("vertex_colors")) {
-				shape->SetVertexColors(element["vertex_colors"]);
-				if (element["vertex_colors"])
-					bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
-				else
-					bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
-			}
-
-
+			
 			// texture scale values
 			if (element.contains("specular_level")) {
 				shader->SetGlossiness(element["specular_level"]);
