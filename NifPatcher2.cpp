@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	for (auto& element : j) {
-		element["texture"] = str_tolower(element["texture"]);
+		element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
 	}
 	auto save_options = NifSaveOptions();
 	save_options.optimize = false;
