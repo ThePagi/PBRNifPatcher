@@ -22,3 +22,7 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the WIP True PBR
 * "vertex_colors": true/false -> enable or disable vertex colors, useful if the mesh used vertex colors to change the colors of the old textures
 * "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
 * "delete": true -> removes the matched mesh, useful for example for ugly decals that even PBR cannot save
+* "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, doesn't work for setting PBR texture names
+* "cubemap": "textures\\cubemaps\\copper_e.dds" -> sets a cubemap path
+* "env_map_scale": 2.0: sets the environment mapping scale
+* "env_mapping": true: forces the shader type to env mapping, does nothing if false
