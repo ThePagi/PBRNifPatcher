@@ -3,6 +3,9 @@
     {
         "texture": "table_leg_bark", "emissive": true, "parallax": true, "subsurface_foliage":false, "subsurface": true,
         "specular_level" : 0.04, "subsurface_color": [0,0.5,1], "roughness_scale" : 0.1, "subsurface_opacity" : 0.11, "displacement_scale" : 0.111
+    },
+    {
+        "path_contains": "dwemer", "pbr": false, "cubemap": "textures\\cubemaps\\copper_e.dds", "env_map_scale": 2.0
     }
 
 ]

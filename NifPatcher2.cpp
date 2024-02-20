@@ -44,7 +44,9 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 		tex_path.pop_back();
 		for (auto& element : settings) {
 			//std::cout << element << '\n';
-			if (!tex_path.ends_with(element["texture"]))
+			auto contains_match = element.contains("path_contains") && tex_path.find(element["path_contains"]) != string::npos;
+			auto name_match = element.contains("texture") && tex_path.ends_with(element["texture"]);
+			if (!contains_match && !name_match)
 				continue;
 			modified = true;
 			if (element.contains("delete") && element["delete"]) {
@@ -62,10 +64,45 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				else
 					bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
 			}
+
+			// texture scale values
+			if (element.contains("specular_level")) {
+				shader->SetGlossiness(element["specular_level"]);
+			}
+			if (element.contains("subsurface_color") && element["subsurface_color"].size() > 2) {
+				shader->SetSpecularColor(Vector3(element["subsurface_color"][0], element["subsurface_color"][1], element["subsurface_color"][2]));
+			}
+			if (element.contains("roughness_scale")) {
+				shader->SetSpecularStrength(element["roughness_scale"]);
+			}
+			if (element.contains("subsurface_opacity")) {
+				bslsp->softlighting = element["subsurface_opacity"];
+			}
+			if (element.contains("displacement_scale")) {
+				bslsp->rimlightPower = element["displacement_scale"];
+			}
+			if (element.contains("env_mapping")) {
+				if (element["env_mapping"]) {
+					bslsp->bslspShaderType = BSLSP_ENVMAP;
+					bslsp->shaderFlags1 |= SLSF1_ENVIRONMENT_MAPPING;
+					bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
+				}
+			}
+			if (element.contains("env_map_scale")) {
+				bslsp->environmentMapScale = element["env_map_scale"];
+			}
+			if (element.contains("cubemap")) {
+				string cubemap = element["cubemap"];
+				nif.SetTextureSlot(shape, cubemap, 4);
+			}
+			
+
 			if (element.contains("pbr") && !element["pbr"])
 				continue;
+			if (!name_match)
+				continue;
 
-			std::string empty_path = "";
+			string empty_path = "";
 			auto diffuse = tex_path + ".dds";
 			nif.SetTextureSlot(shape, diffuse, 0);
 			auto normal = tex_path + "_n.dds";
@@ -98,6 +135,7 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			}
 
 
+
 			// revert to default shader type, remove flags used in other types
 			bslsp->bslspShaderType = BSLSP_DEFAULT;
 			bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
@@ -125,23 +163,6 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			else {
 				bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
 			}
-			
-			// texture scale values
-			if (element.contains("specular_level")) {
-				shader->SetGlossiness(element["specular_level"]);
-			}
-			if (element.contains("subsurface_color") && element["subsurface_color"].size() > 2) {
-				shader->SetSpecularColor(Vector3(element["subsurface_color"][0], element["subsurface_color"][1], element["subsurface_color"][2]));
-			}
-			if (element.contains("roughness_scale")) {
-				shader->SetSpecularStrength(element["roughness_scale"]);
-			}
-			if (element.contains("subsurface_opacity")) {
-				bslsp->softlighting = element["subsurface_opacity"];
-			}
-			if (element.contains("displacement_scale")) {
-				bslsp->rimlightPower = element["displacement_scale"];
-			}
 		}
 	}
 	return modified;
@@ -163,7 +184,10 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	for (auto& element : j) {
-		element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
+		if(element.contains("texture"))
+			element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
+		if (element.contains("path_contains"))
+			element["path_contains"] = str_tolower(element["path_contains"]);
 	}
 	auto save_options = NifSaveOptions();
 	save_options.optimize = false;
