@@ -48,14 +48,15 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			auto name_match = element.contains("texture") && tex_path.ends_with(element["texture"]);
 			if (!contains_match && !name_match)
 				continue;
-			modified = true;
 			if (element.contains("delete") && element["delete"]) {
 				// delete this fkin mesh bro
 				nif.DeleteShape(shape);
+				modified = true;
 				break;
 			}
 			if (element.contains("smooth_angle")) {
 				nif.CalcNormalsForShape(shape, true, true, element["smooth_angle"]);
+				modified = true;
 			}
 			if (element.contains("vertex_colors")) {
 				shape->SetVertexColors(element["vertex_colors"]);
@@ -63,37 +64,50 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 					bslsp->shaderFlags2 |= SLSF2_VERTEX_COLORS;
 				else
 					bslsp->shaderFlags2 &= ~SLSF2_VERTEX_COLORS;
+				modified = true;
 			}
 
 			// texture scale values
 			if (element.contains("specular_level")) {
 				shader->SetGlossiness(element["specular_level"]);
+				modified = true;
 			}
 			if (element.contains("subsurface_color") && element["subsurface_color"].size() > 2) {
 				shader->SetSpecularColor(Vector3(element["subsurface_color"][0], element["subsurface_color"][1], element["subsurface_color"][2]));
+				modified = true;
 			}
 			if (element.contains("roughness_scale")) {
 				shader->SetSpecularStrength(element["roughness_scale"]);
+				modified = true;
 			}
 			if (element.contains("subsurface_opacity")) {
 				bslsp->softlighting = element["subsurface_opacity"];
+				modified = true;
 			}
 			if (element.contains("displacement_scale")) {
 				bslsp->rimlightPower = element["displacement_scale"];
+				modified = true;
 			}
 			if (element.contains("env_mapping")) {
 				if (element["env_mapping"]) {
 					bslsp->bslspShaderType = BSLSP_ENVMAP;
 					bslsp->shaderFlags1 |= SLSF1_ENVIRONMENT_MAPPING;
 					bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
+					modified = true;
 				}
 			}
-			if (element.contains("env_map_scale")) {
+			if (element.contains("env_map_scale") && bslsp->bslspShaderType == BSLSP_ENVMAP) {
 				bslsp->environmentMapScale = element["env_map_scale"];
+				modified = true;
 			}
-			if (element.contains("cubemap")) {
+			if (element.contains("env_map_scale_mult") && bslsp->bslspShaderType == BSLSP_ENVMAP) {
+				bslsp->environmentMapScale *= element["env_map_scale_mult"];
+				modified = true;
+			}
+			if (element.contains("cubemap") && bslsp->bslspShaderType == BSLSP_ENVMAP) {
 				string cubemap = element["cubemap"];
 				nif.SetTextureSlot(shape, cubemap, 4);
+				modified = true;
 			}
 			
 
@@ -101,6 +115,7 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				continue;
 			if (!name_match)
 				continue;
+			modified = true;
 
 			string empty_path = "";
 			auto diffuse = tex_path + ".dds";
