@@ -109,7 +109,14 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				nif.SetTextureSlot(shape, cubemap, 4);
 				modified = true;
 			}
-			
+			if (element.contains("emissive_scale")) {
+				shader->SetEmissiveMultiple(element["emissive_scale"]);
+				modified = true;
+			}
+			if (element.contains("emissive_color") && element["emissive_color"].size() > 3) {
+				shader->SetEmissiveColor(Color4(element["emissive_color"][0], element["emissive_color"][1], element["emissive_color"][2], element["emissive_color"][3]));
+				modified = true;
+			}
 
 			if (element.contains("pbr") && !element["pbr"])
 				continue;
@@ -125,9 +132,11 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			if (element.contains("emissive") && element["emissive"]) {
 				auto glow = tex_path + "_g.dds";
 				nif.SetTextureSlot(shape, glow, 2);
+				bslsp->shaderFlags1 |= SLSF1_EXTERNAL_EMITTANCE;
 			}
 			else {
 				nif.SetTextureSlot(shape, empty_path, 2);
+				bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
 			}
 			if (element.contains("parallax") && element["parallax"]) {
 				auto parallax = tex_path + "_p.dds";
@@ -154,9 +163,7 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 			// revert to default shader type, remove flags used in other types
 			bslsp->bslspShaderType = BSLSP_DEFAULT;
 			bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
-			bslsp->shaderFlags1 &= ~SLSF1_FACEGEN_RGB_TINT;
 			bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
-			bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
 			bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
 			bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
 			bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
