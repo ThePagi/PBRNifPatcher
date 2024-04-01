@@ -1,0 +1,9 @@
+[
+    {
+        "texture": "texture_name", "emissive": false, "parallax": true, "subsurface_foliage":false, "subsurface": false, 
+        "specular_level" : 0.04, "subsurface_color": [1,1,1], "roughness_scale" : 1, "subsurface_opacity" : 1, "smooth_angle": 75, "displacement_scale" : 0.35
+    },
+    {
+        "texture": "another_texture", "specular_level" : 0.04,  "roughness_scale" : 1
+    }
+]
