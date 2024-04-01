@@ -125,7 +125,8 @@ bool set_pbr_textures(NifFile& nif, vector<json> js) {
 				continue;
 			modified = true;
 
-			tex_path.insert(0, "pbr_");
+			if(!tex_path.starts_with("textures\\pbr\\"))
+				tex_path.insert(9, "pbr\\");
 
 			string empty_path = "";
 			auto diffuse = tex_path + ".dds";
