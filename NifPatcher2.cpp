@@ -22,7 +22,7 @@ std::string str_tolower(std::string s)
 	return s;
 }
 
-bool set_pbr_textures(NifFile& nif, json settings) {
+bool set_pbr_textures(NifFile& nif, vector<json> js) {
 	auto modified = false;
 	for (const auto shape : nif.GetShapes())
 	{
@@ -42,6 +42,7 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 		tex_path.pop_back();
 		tex_path.pop_back();
 		tex_path.pop_back();
+		for(auto& settings: js)
 		for (auto& element : settings) {
 			//std::cout << element << '\n';
 			auto contains_match = element.contains("path_contains") && tex_path.find(element["path_contains"]) != string::npos;
@@ -124,6 +125,8 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 				continue;
 			modified = true;
 
+			tex_path.insert(0, "pbr_");
+
 			string empty_path = "";
 			auto diffuse = tex_path + ".dds";
 			nif.SetTextureSlot(shape, diffuse, 0);
@@ -192,42 +195,55 @@ bool set_pbr_textures(NifFile& nif, json settings) {
 
 int main(int argc, char* argv[])
 {
-	bool overwrite = argc > 1 && argv[1][0] == '-' && argv[1][1] == 'o';
-	json j;
-	try {
-		std::ifstream f("settings.json");
-		j = json::parse(f);
-	}
-	catch (json::parse_error& ex)
-	{
-		std::cerr << "Json parse error at byte " << ex.byte << std::endl;
-		cout << "Error, quitting!" << endl;
+	vector<json> js;
+	if (!exists(".\\PBRNifPatcher")) {
+		cout << "Error, config directory PBRNifPatcher does not exist!" << endl;
 		getchar();
 		return 1;
 	}
-	for (auto& element : j) {
-		if(element.contains("texture"))
-			element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
-		if (element.contains("path_contains"))
-			element["path_contains"] = str_tolower(element["path_contains"]);
+	for (recursive_directory_iterator i(".\\PBRNifPatcher"), end; i != end; ++i) {
+		if (!is_directory(i->path()) && i->path().extension().compare(".json") == 0) {
+			try {
+				std::ifstream f(i->path());
+				js.push_back(json::parse(f));
+				cout << "Config " << i->path().filename() << " found!" << endl;
+			}
+			catch (json::parse_error& ex)
+			{
+				std::cerr << "Json file " << i->path().filename() << " parse error at byte " << ex.byte << std::endl;
+				cout << "Error, quitting!" << endl;
+				getchar();
+				return 1;
+			}
+		}
 	}
+
+	auto item_count = 0;
+	for (auto& j : js)
+		for (auto& element : j) {
+			item_count++;
+			if (element.contains("texture"))
+				element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
+			if (element.contains("path_contains"))
+				element["path_contains"] = str_tolower(element["path_contains"]);
+		}
+	cout << "Total config items found: " << item_count << endl;
+
 	auto save_options = NifSaveOptions();
 	save_options.optimize = false;
 	save_options.sortBlocks = false;
+	auto out_dir = ".\\pbr_output";
 	for (recursive_directory_iterator i("."), end; i != end; ++i) {
-		if (i->path().string().starts_with(".\\output"))
+		if (i->path().string().starts_with(out_dir))
 			continue;
 		if (!is_directory(i->path()) && i->path().extension().compare(".nif") == 0) {
 			//cout << "Processing " << i->path() << "\n";
 			NifFile nif;
 			if (nif.Load(i->path()) == 0) {
-				if (set_pbr_textures(nif, j)) {
+				if (set_pbr_textures(nif, js)) {
 					cout << "Modified " << i->path() << "\n";
 					path out_path;
-					if (overwrite)
-						out_path = path(".") / path(i->path().lexically_normal());
-					else
-						out_path = path(".\\output") / path(i->path().lexically_normal());
+					out_path = path(out_dir) / path(i->path().lexically_normal());
 					create_directories(out_path.parent_path());
 					if (nif.Save(out_path, save_options) != 0) {
 						cout << "Error saving " << out_path << "\n";
