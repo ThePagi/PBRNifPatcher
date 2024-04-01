@@ -26,3 +26,5 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the WIP True PBR
 * "cubemap": "textures\\cubemaps\\copper_e.dds" -> sets a cubemap path
 * "env_map_scale": 2.0: sets the environment mapping scale
 * "env_mapping": true: forces the shader type to env mapping, does nothing if false
+* "emissive_scale": 1 -> sets a multiplier for the emissive color
+* "emissive_color": [1,1,1,1] -> sets the emissive color which multiplies color from the emissive texture
