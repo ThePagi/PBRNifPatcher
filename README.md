@@ -1,12 +1,19 @@
 This is a tool for modifying Skyrim SE/AE .nif files to support the WIP True PBR shaders. The modification can be also done by hand, but this tool can batch modify all meshes according to your specification.
 
-# Usage
+# Normal usage (you downloaded a True PBR texture mod)
+1. Download the patcher.
+2. Add the patcher as an executable in MO2 (or whatever you do in other mod managers), by default it patches all meshes in the Data folder.
+3. Run the patcher through MO2 - configuration should already be provided by the modder and is used automatically.
+4. A 'pbr_output' folder should appear in your Overwrite or in the mod you specified as output.
+5. Move the 'meshes' folder outside the 'pbr_output' folder.
+6. Done! If you change your meshes, delete the generated 'meshes' folder before patching, otherwise the old patched meshes will be used again!
+
+# Modder Usage
 * You can build the tool with Visual Studio and C++20. Prebuilt executable available soon (or now on Community Shaders Discord).
 * Specify the base name of the textures you have PBR files for (and other available parameters) in a JSON file in the PBRNifPatcher folder (see included example config). The "parallax" and "emissive" options should be set to true if you have the parallax and emissive textures. "subsurface" or "subsurface_foliage" turns on the corresponding shading (choose none or one) and requires a subsurface color texture.
 * More on the material specification at https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR
-* Place the settings.json file in the same folder as the executable. Place your .nif files in the same folder or any subfolders.
-* Run the executable. The modified .nif files will appear in an "pbr_output" folder.
 * You can check NifPatcher2.cpp if you are unsure about the program logic. 
+* YOU NEED TO SHIP THE JSON CONFIG WITH YOUR TEXTURES TO ALLOW USERS TO PATCH THEIR OWN MESHES. You can ship patched meshes, but users may have mods that ovewrite them or that add new meshes using your textures.
 
 # Texture paths
 * To avoid multiple issues between vanilla and pbr textures, all pbr texture paths point to /textures/pbr/... instead of just /textures/...
