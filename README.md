@@ -1,7 +1,7 @@
 This is a tool for modifying Skyrim SE/AE .nif files to support the True PBR shaders included in the Community Shaders mod. The modification can be also done by hand, but this tool can batch modify all meshes according to your specification.
 
 # Normal usage (you downloaded a True PBR texture mod)
-1. [Download the patcher here](https://github.com/ThePagi/PBRNifPatcher/releases) and unpack it anywhere.
+1. [Download the patcher here](https://github.com/ThePagi/PBRNifPatcher/releases) (Assets ->  PBRNifPatcher.zip) and unpack it anywhere.
 2. Add the patcher as an executable in MO2 (or whatever you do in other mod managers), by default it patches all meshes in the Data folder.
 3. Run the patcher through MO2 - configuration should already be provided by the modder and is used automatically.
 4. A 'pbr_output' folder should appear in your Overwrite or in the mod you specified as output.
