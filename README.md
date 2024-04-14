@@ -34,13 +34,15 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * Subsurface color: texturename_s.dds
 
 # Additional settings
+* "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, does NOT set PBR texture paths unless "texture" also matches
+* "nif_filter": "book04a" -> skips the current .nif file unless its path contains the given text
 * "pbr": false -> only does non-pbr modifications (as below)
 * "vertex_colors": true/false -> enable or disable vertex colors, useful if the mesh used vertex colors to change the colors of the old textures
 * "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
 * "delete": true -> removes the matched mesh, useful for example for ugly decals that even PBR cannot save
-* "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, doesn't work for setting PBR texture names
 * "cubemap": "textures\\cubemaps\\copper_e.dds" -> sets a cubemap path
 * "env_map_scale": 2.0: sets the environment mapping scale
 * "env_mapping": true: forces the shader type to env mapping, does nothing if false
 * "emissive_scale": 1 -> sets a multiplier for the emissive color
 * "emissive_color": [1,1,1,1] -> sets the emissive color which multiplies color from the emissive texture
+* "uv_scale": 2 -> sets the uv scale, good for objects with badly scaled uvs such as rocks
