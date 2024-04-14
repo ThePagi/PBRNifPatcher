@@ -22,7 +22,7 @@ std::string str_tolower(std::string s)
 	return s;
 }
 
-bool set_pbr_textures(NifFile& nif, vector<json> js) {
+bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 	auto modified = false;
 	for (const auto shape : nif.GetShapes())
 	{
@@ -45,6 +45,8 @@ bool set_pbr_textures(NifFile& nif, vector<json> js) {
 		for(auto& settings: js)
 		for (auto& element : settings) {
 			//std::cout << element << '\n';
+			if (element.contains("nif_filter") && filename.find(element["nif_filter"]) == string::npos)
+				continue;
 			auto contains_match = element.contains("path_contains") && tex_path.find(element["path_contains"]) != string::npos;
 			auto name_match = element.contains("texture") && tex_path.ends_with(element["texture"]);
 			if (!contains_match && !name_match)
@@ -116,6 +118,10 @@ bool set_pbr_textures(NifFile& nif, vector<json> js) {
 			}
 			if (element.contains("emissive_color") && element["emissive_color"].size() > 3) {
 				shader->SetEmissiveColor(Color4(element["emissive_color"][0], element["emissive_color"][1], element["emissive_color"][2], element["emissive_color"][3]));
+				modified = true;
+			}
+			if (element.contains("uv_scale")) {
+				bslsp->uvScale = Vector2(element["uv_scale"], element["uv_scale"]);
 				modified = true;
 			}
 
@@ -241,7 +247,8 @@ int main(int argc, char* argv[])
 			//cout << "Processing " << i->path() << "\n";
 			NifFile nif;
 			if (nif.Load(i->path()) == 0) {
-				if (set_pbr_textures(nif, js)) {
+				auto fn = i->path().string();
+				if (set_pbr_textures(nif, js, fn)) {
 					cout << "Modified " << i->path() << "\n";
 					path out_path;
 					out_path = path(out_dir) / path(i->path().lexically_normal());
