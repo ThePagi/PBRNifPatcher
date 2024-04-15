@@ -22,6 +22,31 @@ std::string str_tolower(std::string s)
 	return s;
 }
 
+Vector2 abs(Vector2 v) {
+	return Vector2(abs(v.u), abs(v.v));
+}
+
+Vector2 auto_uv_scale(const vector<Vector2>* uvs, const vector<Vector3>* verts, vector<Triangle>& tris) {
+	Vector2 scale;
+	for (const Triangle& t : tris) {
+		auto v1 = (*verts)[t.p1];
+		auto v2 = (*verts)[t.p2];
+		auto v3 = (*verts)[t.p3];
+		auto uv1 = (*uvs)[t.p1];
+		auto uv2 = (*uvs)[t.p2];
+		auto uv3 = (*uvs)[t.p3];
+		
+		//auto cross = (v2 - v1).cross(v3 - v1);
+		//auto uv_cross = Vector3((uv2 - uv1).u, (uv2 - uv1).v, 0).cross(Vector3((uv3 - uv1).u, (uv3 - uv1).v, 0));
+		//auto s = cross.length() / uv_cross.length();
+		//scale += Vector2(s, s);
+		auto s = (abs(uv2 - uv1) / (v2 - v1).length() + abs(uv3 - uv1) / (v3 - v1).length() + abs(uv2 - uv3) / (v2 - v3).length())/3;
+		scale += Vector2(1.0 / s.u, 1.0 / s.v);
+	}
+	scale /= tris.size();
+	return scale;
+}
+
 bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 	auto modified = false;
 	for (const auto shape : nif.GetShapes())
@@ -59,6 +84,12 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 			}
 			if (element.contains("smooth_angle")) {
 				nif.CalcNormalsForShape(shape, true, true, element["smooth_angle"]);
+				modified = true;
+			}
+			if (element.contains("auto_uv")) {
+				vector<Triangle> tris;
+				shape->GetTriangles(tris);
+				bslsp->uvScale = auto_uv_scale(nif.GetUvsForShape(shape), nif.GetVertsForShape(shape), tris) / element["auto_uv"];
 				modified = true;
 			}
 			if (element.contains("vertex_colors")) {
@@ -240,7 +271,7 @@ int main(int argc, char* argv[])
 	save_options.optimize = false;
 	save_options.sortBlocks = false;
 	auto out_dir = ".\\pbr_output";
-	for (recursive_directory_iterator i("."), end; i != end; ++i) {
+	for (recursive_directory_iterator i(".\\meshes"), end; i != end; ++i) {
 		if (i->path().string().starts_with(out_dir))
 			continue;
 		if (!is_directory(i->path()) && i->path().extension().compare(".nif") == 0) {
