@@ -13,6 +13,8 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the True PBR sha
 * Create a PBRNifPatcher folder in your mod folder and a JSON file with a unique name in it.
 * CHECK THE EXAMPLE JSON CONFIGS IN THE PBRNifPatcher FOLDER IN THIS REPOSITORY!
 * In the JSON file: Specify the base name of the textures you have PBR files for (and other available parameters). The "parallax" and "emissive" options should be set to true if you have the parallax and emissive textures. "subsurface" or "subsurface_foliage" turns on the corresponding shading (choose none or one) and requires a subsurface color texture.
+* When your config is complete, you can run the patcher the same way users do in **Normal usage** section to generate meshes for testing or for shipping.
+ 
 * More on the material specification at https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR
 * You can check NifPatcher2.cpp if you are unsure about the program logic. 
 * YOU NEED TO SHIP THE JSON CONFIG WITH YOUR TEXTURES TO ALLOW USERS TO PATCH THEIR OWN MESHES. You can ship patched meshes, but users may have mods that ovewrite them or that add new meshes using your textures.
