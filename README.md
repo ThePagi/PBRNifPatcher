@@ -2,7 +2,7 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the True PBR sha
 
 # Normal usage (you downloaded a True PBR texture mod)
 1. [Download the patcher here](https://github.com/ThePagi/PBRNifPatcher/releases) (Assets ->  PBRNifPatcher.zip) and unpack it anywhere.
-2. Add the patcher as an executable in MO2 (or whatever you do in other mod managers), by default it patches all meshes in the Data folder.
+2. Add the patcher as an executable in MO2 (or whatever you do in other mod managers), by default it patches all meshes in the Data/Meshes folder.
 3. Run the patcher through MO2 - configuration should already be provided by the modder and is used automatically.
 4. A 'pbr_output' folder should appear in your Overwrite or in the mod you specified as output.
 5. Move the 'meshes' folder outside the 'pbr_output' folder.
@@ -36,6 +36,7 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 # Additional settings
 * "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, does NOT set PBR texture paths unless "texture" also matches
 * "nif_filter": "book04a" -> skips the current .nif file unless its path contains the given text
+* "rename": "new_texture" -> renames the matched texture to a new name
 * "pbr": false -> only does non-pbr modifications (as below)
 * "vertex_colors": true/false -> enable or disable vertex colors, useful if the mesh used vertex colors to change the colors of the old textures
 * "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
