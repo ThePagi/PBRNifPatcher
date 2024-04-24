@@ -49,3 +49,10 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * "emissive_scale": 1 -> sets a multiplier for the emissive color
 * "emissive_color": [1,1,1,1] -> sets the emissive color which multiplies color from the emissive texture
 * "uv_scale": 2 -> sets the uv scale, good for objects with badly scaled uvs such as rocks
+
+* "lock_diffuse": true -> skips changing the paths in this texture slot
+* "lock_normal": true -> skips changing the paths in this texture slot
+* "lock_emissive": true -> skips changing the paths in this texture slot
+* "lock_parallax": true -> skips changing the paths in this texture slot
+* "lock_rmaos": true -> skips changing the paths in this texture slot
+* "lock_subsurface": true -> skips changing the paths in this texture slot
