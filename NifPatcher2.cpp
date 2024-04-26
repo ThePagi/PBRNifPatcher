@@ -201,12 +201,14 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					nif.SetTextureSlot(shape, empty_path, 2);
 					bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
 				}
-				if (element.contains("parallax") && element["parallax"] && !flag(element, "lock_parallax")) {
-					auto parallax = tex_path + "_p.dds";
-					nif.SetTextureSlot(shape, parallax, 3);
-				}
-				else if (!flag(element, "lock_emissive")) {
-					nif.SetTextureSlot(shape, empty_path, 3);
+				if (!flag(element, "lock_parallax")) {
+					if (element.contains("parallax") && element["parallax"]) {
+						auto parallax = tex_path + "_p.dds";
+						nif.SetTextureSlot(shape, parallax, 3);
+					}
+					else {
+						nif.SetTextureSlot(shape, empty_path, 3);
+					}
 				}
 				nif.SetTextureSlot(shape, empty_path, 4); // unused
 				if (!flag(element, "lock_rmaos")) {
