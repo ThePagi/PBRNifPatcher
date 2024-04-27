@@ -192,17 +192,22 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					auto normal = tex_path + "_n.dds";
 					nif.SetTextureSlot(shape, normal, 1);
 				}
-				if (element.contains("emissive") && element["emissive"] && !flag(element, "lock_emissive")) {
-					auto glow = tex_path + "_g.dds";
-					nif.SetTextureSlot(shape, glow, 2);
-					bslsp->shaderFlags1 |= SLSF1_EXTERNAL_EMITTANCE;
+
+				if (element.contains("emissive") && !flag(element, "lock_emissive"))
+				{
+					if (element["emissive"]) {
+						auto glow = tex_path + "_g.dds";
+						nif.SetTextureSlot(shape, glow, 2);
+						bslsp->shaderFlags1 |= SLSF1_EXTERNAL_EMITTANCE;
+					}
+					else {
+						nif.SetTextureSlot(shape, empty_path, 2);
+						bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
+					}
 				}
-				else if (!flag(element, "lock_emissive")) {
-					nif.SetTextureSlot(shape, empty_path, 2);
-					bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
-				}
-				if (!flag(element, "lock_parallax")) {
-					if (element.contains("parallax") && element["parallax"]) {
+
+				if (element.contains("parallax") && !flag(element, "lock_parallax")) {
+					if (element["parallax"]) {
 						auto parallax = tex_path + "_p.dds";
 						nif.SetTextureSlot(shape, parallax, 3);
 					}
