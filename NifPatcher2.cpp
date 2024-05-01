@@ -221,9 +221,8 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					nif.SetTextureSlot(shape, rmaos, 5);
 				}
 				nif.SetTextureSlot(shape, empty_path, 6); // unused
-				if (!flag(element, "lock_subsurface")) {
-					if ((element.contains("subsurface_foliage") && element["subsurface_foliage"])
-						|| (element.contains("subsurface") && element["subsurface"])) {
+				if ((element.contains("subsurface_foliage") || element.contains("subsurface")) && !flag(element, "lock_subsurface")) {
+					if (element["subsurface_foliage"] || element["subsurface"]) {
 						auto subsurface = tex_path + "_s.dds";
 						nif.SetTextureSlot(shape, subsurface, 7);
 					}
@@ -246,17 +245,21 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 				if (element.contains("subsurface_foliage") && element["subsurface_foliage"] && element.contains("subsurface") && element["subsurface"]) {
 					cout << "Error: Subsurface and foliage shader chosen at once, undefined behavior!" << endl;
 				}
-				if (element.contains("subsurface_foliage") && element["subsurface_foliage"]) {
-					bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
+				if (element.contains("subsurface_foliage")) {
+					if (element["subsurface_foliage"]) {
+						bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
+					}
+					else {
+						bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
+					}
 				}
-				else {
-					bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
-				}
-				if (element.contains("subsurface") && element["subsurface"]) {
-					bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
-				}
-				else {
-					bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
+				if (element.contains("subsurface")) {
+					if (element["subsurface"]) {
+						bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
+					}
+					else {
+						bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
+					}
 				}
 			}
 	}
