@@ -166,100 +166,195 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					modified = true;
 				}
 
-				if (element.contains("pbr") && !element["pbr"])
-					continue;
-				if (!name_match)
-					continue;
-				modified = true;
-
-				string tex_path = string(orig_path);
-				if (!tex_path.starts_with("textures\\pbr\\"))
-					tex_path.insert(9, "pbr\\");
-
-				if (element.contains("rename")) {
-					string orig = element["texture"];
-					tex_path.erase(tex_path.length() - orig.length(), orig.length());
-					tex_path.append(element["rename"]);
-				}
-
-				string empty_path = "";
-				if (!flag(element, "lock_diffuse")) {
-					auto diffuse = tex_path + ".dds";
-					nif.SetTextureSlot(shape, diffuse, 0);
-				}
-
-				if (!flag(element, "lock_normal")) {
-					auto normal = tex_path + "_n.dds";
-					nif.SetTextureSlot(shape, normal, 1);
-				}
-
-				if (element.contains("emissive") && !flag(element, "lock_emissive"))
+				if (element.contains("pbr") && element["pbr"] && name_match)
 				{
-					if (element["emissive"]) {
-						auto glow = tex_path + "_g.dds";
-						nif.SetTextureSlot(shape, glow, 2);
-						bslsp->shaderFlags1 |= SLSF1_EXTERNAL_EMITTANCE;
-					}
-					else {
-						nif.SetTextureSlot(shape, empty_path, 2);
-						bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
-					}
-				}
 
-				if (element.contains("parallax") && !flag(element, "lock_parallax")) {
-					if (element["parallax"]) {
-						auto parallax = tex_path + "_p.dds";
-						nif.SetTextureSlot(shape, parallax, 3);
+					modified = true;
+
+					string tex_path = string(orig_path);
+					if (!tex_path.starts_with("textures\\pbr\\"))
+						tex_path.insert(9, "pbr\\");
+
+					if (element.contains("rename")) {
+						string orig = element["texture"];
+						tex_path.erase(tex_path.length() - orig.length(), orig.length());
+						tex_path.append(element["rename"]);
 					}
-					else {
-						nif.SetTextureSlot(shape, empty_path, 3);
+
+					string empty_path = "";
+					if (!flag(element, "lock_diffuse")) {
+						auto diffuse = tex_path + ".dds";
+						nif.SetTextureSlot(shape, diffuse, 0);
 					}
-				}
-				nif.SetTextureSlot(shape, empty_path, 4); // unused
-				if (!flag(element, "lock_rmaos")) {
-					auto rmaos = tex_path + "_rmaos.dds";
-					nif.SetTextureSlot(shape, rmaos, 5);
-				}
-				nif.SetTextureSlot(shape, empty_path, 6); // unused
-				if ((element.contains("subsurface_foliage") || element.contains("subsurface")) && !flag(element, "lock_subsurface")) {
-					if (element["subsurface_foliage"] || element["subsurface"]) {
-						auto subsurface = tex_path + "_s.dds";
-						nif.SetTextureSlot(shape, subsurface, 7);
+
+					if (!flag(element, "lock_normal")) {
+						auto normal = tex_path + "_n.dds";
+						nif.SetTextureSlot(shape, normal, 1);
 					}
-					else {
-						nif.SetTextureSlot(shape, empty_path, 7);
+
+					if (element.contains("emissive") && !flag(element, "lock_emissive"))
+					{
+						if (element["emissive"]) {
+							auto glow = tex_path + "_g.dds";
+							nif.SetTextureSlot(shape, glow, 2);
+							bslsp->shaderFlags1 |= SLSF1_EXTERNAL_EMITTANCE;
+						}
+						else {
+							nif.SetTextureSlot(shape, empty_path, 2);
+							bslsp->shaderFlags1 &= ~SLSF1_EXTERNAL_EMITTANCE;
+						}
 					}
-				}
+
+					if (element.contains("parallax") && !flag(element, "lock_parallax")) {
+						if (element["parallax"]) {
+							auto parallax = tex_path + "_p.dds";
+							nif.SetTextureSlot(shape, parallax, 3);
+						}
+						else {
+							nif.SetTextureSlot(shape, empty_path, 3);
+						}
+					}
+					nif.SetTextureSlot(shape, empty_path, 4); // unused
+					if (!flag(element, "lock_rmaos")) {
+						auto rmaos = tex_path + "_rmaos.dds";
+						nif.SetTextureSlot(shape, rmaos, 5);
+					}
+					if (!flag(element, "lock_cnr")) {
+						if (element.contains("coat_normal") && element["coat_normal"]) { // coat normal roughness
+
+							auto cnr = tex_path + "_cnr.dds";
+							nif.SetTextureSlot(shape, cnr, 6);
+						}
+						else {
+							nif.SetTextureSlot(shape, empty_path, 6);
+						}
+					}
+					if (!flag(element, "lock_subsurface")) {
+						if ((element.contains("subsurface_foliage") && element["subsurface_foliage"])
+							|| (element.contains("subsurface") && element["subsurface"])
+							|| (element.contains("coat_diffuse") && element["coat_diffuse"])
+							) {
+							auto subsurface = tex_path + "_s.dds";
+							nif.SetTextureSlot(shape, subsurface, 7);
+						}
+						else {
+							nif.SetTextureSlot(shape, empty_path, 7);
+						}
+					}
 
 
-				// revert to default shader type, remove flags used in other types
-				bslsp->bslspShaderType = BSLSP_DEFAULT;
-				bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
-				bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
-				bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
-				bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
-				bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
+					// revert to default shader type, remove flags used in other types
+					bslsp->bslspShaderType = BSLSP_DEFAULT;
+					bslsp->shaderFlags1 &= ~SLSF1_ENVIRONMENT_MAPPING;
+					bslsp->shaderFlags1 &= ~SLSF1_PARALLAX;
+					bslsp->shaderFlags2 &= ~SLSF2_GLOW_MAP;
+					bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
+					bslsp->shaderFlags2 &= ~SLSF2_MULTI_LAYER_PARALLAX;
 
-				bslsp->shaderFlags2 |= SLSF2_UNUSED01; // "PBR FLAG"
-				// pbr shader switch
-				if (element.contains("subsurface_foliage") && element["subsurface_foliage"] && element.contains("subsurface") && element["subsurface"]) {
-					cout << "Error: Subsurface and foliage shader chosen at once, undefined behavior!" << endl;
+					bslsp->shaderFlags2 |= SLSF2_UNUSED01; // "PBR FLAG"
+					// pbr shader switch
+					if (element.contains("subsurface_foliage") && element["subsurface_foliage"] && element.contains("subsurface") && element["subsurface"]) {
+						cout << "Error: Subsurface and foliage shader chosen at once, undefined behavior!" << endl;
+					}
+					if (element.contains("subsurface_foliage")) {
+						if (element["subsurface_foliage"]) {
+							bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
+						}
+						else {
+							bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
+						}
+					}
+					else if (element.contains("subsurface")) {
+						if (element["subsurface"]) {
+							bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
+						}
+						else {
+							bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
+						}
+					}
+					else if (element.contains("multilayer") && element["multilayer"]) {
+						bslsp->bslspShaderType = BSLSP_MULTILAYERPARALLAX;
+						bslsp->shaderFlags2 |= SLSF2_MULTI_LAYER_PARALLAX;
+						if (element.contains("coat_color") && element["coat_color"].size() > 2) {
+							shader->SetSpecularColor(Vector3(element["coat_color"][0], element["coat_color"][1], element["coat_color"][2]));
+						}
+						if (element.contains("coat_specular_level")) {
+							bslsp->parallaxRefractionScale = element["coat_specular_level"];
+						}
+						if (element.contains("coat_roughness")) {
+							bslsp->parallaxInnerLayerThickness = element["coat_roughness"];
+						}
+						if (element.contains("coat_strength")) {
+							bslsp->softlighting = element["coat_strength"];
+						}
+						if (element.contains("coat_diffuse")) {
+							if (element["coat_diffuse"]) {
+								bslsp->shaderFlags2 |= SLSF2_EFFECT_LIGHTING;
+							}
+							else {
+								bslsp->shaderFlags2 &= ~SLSF2_EFFECT_LIGHTING;
+							}
+						}
+						if (element.contains("coat_parallax")) {
+							if (element["coat_parallax"]) {
+								bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
+							}
+							else {
+								bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
+							}
+						}
+						if (element.contains("coat_normal")) {
+							if (element["coat_normal"]) {
+								bslsp->shaderFlags2 |= SLSF2_BACK_LIGHTING;
+							}
+							else {
+								bslsp->shaderFlags2 &= ~SLSF2_BACK_LIGHTING;
+							}
+						}
+						if (element.contains("inner_uv_scale")) {
+							bslsp->parallaxInnerLayerTextureScale = Vector2(element["inner_uv_scale"], element["inner_uv_scale"]);
+						}
+					}
 				}
-				if (element.contains("subsurface_foliage")) {
-					if (element["subsurface_foliage"]) {
-						bslsp->shaderFlags2 |= SLSF2_SOFT_LIGHTING;
-					}
-					else {
-						bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
-					}
+				if (element.contains("slot1")) {
+					string p = element["slot1"];
+					nif.SetTextureSlot(shape, p, 0);
+					modified = true;
 				}
-				if (element.contains("subsurface")) {
-					if (element["subsurface"]) {
-						bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
-					}
-					else {
-						bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
-					}
+				if (element.contains("slot2")) {
+					string p = element["slot2"];
+					nif.SetTextureSlot(shape, p, 1);
+					modified = true;
+				}
+				if (element.contains("slot3")) {
+					string p = element["slot3"];
+					nif.SetTextureSlot(shape, p, 2);
+					modified = true;
+				}
+				if (element.contains("slot4")) {
+					string p = element["slot4"];
+					nif.SetTextureSlot(shape, p, 3);
+					modified = true;
+				}
+				if (element.contains("slot5")) {
+					string p = element["slot5"];
+					nif.SetTextureSlot(shape, p, 4);
+					modified = true;
+				}
+				if (element.contains("slot6")) {
+					string p = element["slot6"];
+					nif.SetTextureSlot(shape, p, 5);
+					modified = true;
+				}
+				if (element.contains("slot7")) {
+					string p = element["slot7"];
+					nif.SetTextureSlot(shape, p, 6);
+					modified = true;
+				}
+				if (element.contains("slot8")) {
+					string p = element["slot8"];
+					nif.SetTextureSlot(shape, p, 7);
+					modified = true;
 				}
 			}
 	}
