@@ -166,7 +166,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					modified = true;
 				}
 
-				if (element.contains("pbr") && element["pbr"] && name_match)
+				if ((!element.contains("pbr") || element["pbr"]) && name_match)
 				{
 
 					modified = true;
