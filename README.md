@@ -33,7 +33,17 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * Emissive (glow): texturename_g.dds
 * Parallax (height, displacement): texturename_p.dds
 * RMAOS (roughness, metallic, ambient oclusion, specular): texturename_rmaos.dds
-* Subsurface color: texturename_s.dds
+* Multilayer coat normal+roughness: texturename_cnr.dds
+* Subsurface color/Multilayer coat color: texturename_s.dds
+
+# Multilayer parallax settings example:
+* "multilayer": true
+* "coat_strength": 1.0,
+* "coat_roughness": 1.0,
+* "coat_specular_level": 0.04,
+* "coat_diffuse": true,
+* "coat_parallax": true,
+* "coat_normal": true,
 
 # Additional settings
 * "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, does NOT set PBR texture paths unless "texture" also matches
@@ -50,6 +60,7 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * "emissive_color": [1,1,1,1] -> sets the emissive color which multiplies color from the emissive texture
 * "uv_scale": 2 -> sets the uv scale, good for objects with badly scaled uvs such as rocks
 * "auto_uv": 2048 -> experimental, scales the uvs to keep the pixel density constant on average
+* "slotX": "path" -> (X = 1..8) explicitly sets the whole texture path for a slot, example: "slot8": "textures\\pbr\\test\\coat.dds"
 
 * "lock_diffuse": true -> skips changing the paths in this texture slot
 * "lock_normal": true -> skips changing the paths in this texture slot
