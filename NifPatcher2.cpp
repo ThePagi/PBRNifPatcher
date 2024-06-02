@@ -264,7 +264,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 							bslsp->shaderFlags2 &= ~SLSF2_SOFT_LIGHTING;
 						}
 					}
-					else if (element.contains("subsurface")) {
+					if (element.contains("subsurface")) {
 						if (element["subsurface"]) {
 							bslsp->shaderFlags2 |= SLSF2_RIM_LIGHTING;
 						}
@@ -272,7 +272,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 							bslsp->shaderFlags2 &= ~SLSF2_RIM_LIGHTING;
 						}
 					}
-					else if (element.contains("multilayer") && element["multilayer"]) {
+					if (element.contains("multilayer") && element["multilayer"]) {
 						bslsp->bslspShaderType = BSLSP_MULTILAYERPARALLAX;
 						bslsp->shaderFlags2 |= SLSF2_MULTI_LAYER_PARALLAX;
 						if (element.contains("coat_color") && element["coat_color"].size() > 2) {
