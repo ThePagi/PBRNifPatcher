@@ -94,6 +94,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 				}
 				if (element.contains("smooth_angle")) {
 					nif.CalcNormalsForShape(shape, true, true, element["smooth_angle"]);
+					nif.CalcTangentsForShape(shape);
 					modified = true;
 				}
 				if (element.contains("auto_uv")) {
