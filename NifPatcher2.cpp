@@ -69,21 +69,41 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 		const auto bslsp = dynamic_cast<BSLightingShaderProperty*>(shader);
 		if (!bslsp)
 			continue;
-		auto orig_path = str_tolower(paths[0].get());
-		if (orig_path.length() < 4)
-			continue;
-		orig_path.pop_back(); // remove ".dds"
-		orig_path.pop_back();
-		orig_path.pop_back();
-		orig_path.pop_back();
+		auto orig_diff_path = str_tolower(paths[0].get());
+		if (orig_diff_path.length() >= 4)
+		{
+			orig_diff_path.pop_back(); // remove ".dds"
+			orig_diff_path.pop_back();
+			orig_diff_path.pop_back();
+			orig_diff_path.pop_back();
+		}
+		auto orig_n_path = str_tolower(paths[1].get());
+		if (orig_n_path.length() >= 6)
+		{
+			orig_n_path.pop_back(); // remove "_n.dds"
+			orig_n_path.pop_back();
+			orig_n_path.pop_back();
+			orig_n_path.pop_back();
+			orig_n_path.pop_back();
+			orig_n_path.pop_back();
+		}
 
 		for (auto& settings : js)
 			for (auto& element : settings) {
 				//std::cout << element << '\n';
 				if (element.contains("nif_filter") && filename.find(element["nif_filter"]) == string::npos)
 					continue;
-				auto contains_match = element.contains("path_contains") && orig_path.find(element["path_contains"]) != string::npos;
-				auto name_match = element.contains("texture") && orig_path.ends_with(element["texture"]);
+				auto contains_match = element.contains("path_contains") && orig_diff_path.find(element["path_contains"]) != string::npos;
+				auto name_match = false;
+				string matched_path;
+				if (element.contains("match_normal") && orig_diff_path.ends_with(element["match_normal"])) {
+					name_match = true;
+					matched_path = orig_n_path;
+				}
+				else if (element.contains("match_diffuse") && orig_diff_path.ends_with(element["match_diffuse"])) {
+					name_match = true;
+					matched_path = orig_diff_path;
+				}
 				if (!contains_match && !name_match)
 					continue;
 				if (element.contains("delete") && element["delete"]) {
@@ -172,12 +192,12 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 
 					modified = true;
 
-					string tex_path = string(orig_path);
+					string tex_path = string(matched_path);
 					if (!tex_path.starts_with("textures\\pbr\\"))
 						tex_path.insert(9, "pbr\\");
 
 					if (element.contains("rename")) {
-						string orig = element["texture"];
+						string orig = element["match_diffuse"];
 						tex_path.erase(tex_path.length() - orig.length(), orig.length());
 						tex_path.append(element["rename"]);
 					}
@@ -393,8 +413,13 @@ int main(int argc, char* argv[])
 		for (auto& j : js)
 			for (auto& element : j) {
 				item_count++;
-				if (element.contains("texture"))
-					element["texture"] = str_tolower(element["texture"]).insert(0, 1, '\\');
+				if (element.contains("texture")) {
+					element["match_diffuse"] = element["texture"];
+				}
+				if (element.contains("match_normal"))
+					element["match_normal"] = str_tolower(element["match_normal"]).insert(0, 1, '\\');
+				if (element.contains("match_diffuse"))
+					element["match_diffuse"] = str_tolower(element["match_diffuse"]).insert(0, 1, '\\');
 				if (element.contains("rename"))
 					element["rename"] = str_tolower(element["rename"]).insert(0, 1, '\\');
 				if (element.contains("path_contains"))

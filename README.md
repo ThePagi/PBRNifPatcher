@@ -9,20 +9,20 @@ This is a tool for modifying Skyrim SE/AE .nif files to support the True PBR sha
 6. Done! If you change your meshes, delete the generated 'meshes' folder before patching, otherwise the old patched meshes will be used again!
 
 # Modder Usage
-* You can download the patcher in the Releases tab or build the tool with Visual Studio and C++20.
+* The use of the patcher is the same as for normal users above. The difference is that you will want to create a config fitting for your textures.
 * Create a PBRNifPatcher folder in your mod folder and a JSON file with a unique name in it.
 * CHECK THE EXAMPLE JSON CONFIGS IN THE PBRNifPatcher FOLDER IN THIS REPOSITORY!
-* In the JSON file: Specify the base name of the textures you have PBR files for (and other available parameters). The "parallax" and "emissive" options should be set to true if you have the parallax and emissive textures. "subsurface" or "subsurface_foliage" turns on the corresponding shading (choose none or one) and requires a subsurface color texture.
+* In the JSON file: Specify the base name of the textures you have PBR files for (and other available parameters). The "parallax" and "emissive" options should be set to true if you have the parallax and emissive textures. "subsurface" or "multilayer" turns on the corresponding shading (choose none or one) and may require more textures ([check True PBR wiki for reference](https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR)).
 * When your config is complete, you can run the patcher the same way users do in **Normal usage** section to generate meshes for testing or for shipping.
  
-* More on the material specification at https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR
+* More on the material specification at [https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR](https://github.com/doodlum/skyrim-community-shaders/wiki/True-PBR)
 * You can check NifPatcher2.cpp if you are unsure about the program logic. 
 * YOU NEED TO SHIP THE JSON CONFIG WITH YOUR TEXTURES TO ALLOW USERS TO PATCH THEIR OWN MESHES. You can ship patched meshes, but users may have mods that ovewrite them or that add new meshes using your textures.
 
 Example config entry that sets PBR with parallax for meshes using "texture_name" diffuse texture:
 
  `{
-  "texture": "texture_name", "emissive": false, "parallax": true, "subsurface_foliage":false, "subsurface": false,  "specular_level" : 0.04, "subsurface_color": [1,1,1], "roughness_scale" : 1, "subsurface_opacity" : 1, "displacement_scale" : 0.35
+  "match_diffuse": "texture_name", "emissive": false, "parallax": true, "subsurface": false,  "specular_level" : 0.04, "subsurface_color": [1,1,1], "roughness_scale" : 1, "subsurface_opacity" : 1, "displacement_scale" : 0.35
  }`
 
 # Texture paths
@@ -36,6 +36,16 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * Multilayer coat normal+roughness: texturename_cnr.dds
 * Subsurface color/Multilayer coat color: texturename_s.dds
 
+# Basic properties:
+* "match_diffuse" or "texture": "some\\path\\texturename" -> matches if the diffuse texture path ends with the given string + .dds. Only matches full names (in this example would not match awesome\\path..)
+* "match_normal" -> same as previous, but instead matches the normal texture path + _n.dds. Has priority over diffuse if both match. Use this in cases where diffuse and normal paths differ and you want to use the latter.
+* "path_contains": "dwemer" -> select meshes whose diffuse texture path contains given string, does NOT set PBR texture paths unless "texture" also matches.
+* "nif_filter": "book04a" -> skips the current .nif file unless its path (directories + filename) contains the given text
+* "rename": "new_texture" -> When setting any texture path, this string is used instead of the matched string. The matched part of the path is replaced, therefore folders can be changed too.
+
+# PBR properties:
+* TBD, check example configs
+  
 # Multilayer parallax settings example:
 * "multilayer": true
 * "coat_strength": 1.0,
@@ -45,10 +55,7 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * "coat_parallax": true,
 * "coat_normal": true,
 
-# Additional settings
-* "path_contains": "dwemer" -> select mesh based on a string anywhere in texture path, does NOT set PBR texture paths unless "texture" also matches
-* "nif_filter": "book04a" -> skips the current .nif file unless its path contains the given text
-* "rename": "new_texture" -> renames the matched texture to a new name
+# Miscellaneous settings
 * "pbr": false -> only does non-pbr modifications (as below)
 * "vertex_colors": true/false -> enable or disable vertex colors, useful if the mesh used vertex colors to change the colors of the old textures
 * "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
