@@ -96,7 +96,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 				auto contains_match = element.contains("path_contains") && orig_diff_path.find(element["path_contains"]) != string::npos;
 				auto name_match = false;
 				string matched_path;
-				if (element.contains("match_normal") && orig_diff_path.ends_with(element["match_normal"])) {
+				if (element.contains("match_normal") && orig_n_path.ends_with(element["match_normal"])) {
 					name_match = true;
 					matched_path = orig_n_path;
 				}
@@ -197,7 +197,7 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 						tex_path.insert(9, "pbr\\");
 
 					if (element.contains("rename")) {
-						string orig = element["match_diffuse"];
+						string orig = element.contains("match_normal") ? element["match_normal"] : element["match_diffuse"];
 						tex_path.erase(tex_path.length() - orig.length(), orig.length());
 						tex_path.append(element["rename"]);
 					}

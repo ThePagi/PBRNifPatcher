@@ -1,7 +1,7 @@
 [
     {"texture": "texture_name", "specular_level" : 0.04, "roughness_scale" : 1},
     {
-        "texture": "table_leg_bark", "emissive": true, "parallax": true, "subsurface_foliage":false, "subsurface": true,
+        "texture": "table_leg_bark", "rename": "ur_mom", "emissive": true, "parallax": true, "subsurface_foliage":false, "subsurface": true,
         "specular_level" : 0.04, "subsurface_color": [0,0.5,1], "roughness_scale" : 0.1, "subsurface_opacity" : 0.11, "displacement_scale" : 0.111
     },
     {
