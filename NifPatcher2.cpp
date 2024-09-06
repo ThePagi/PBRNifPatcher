@@ -186,8 +186,15 @@ bool set_pbr_textures(NifFile& nif, vector<json> js, string& filename) {
 					bslsp->uvScale = Vector2(element["uv_scale"], element["uv_scale"]);
 					modified = true;
 				}
+				if (element.contains("parallax_envmap_strength")) {
+					bslsp->parallaxEnvmapStrength = element["parallax_envmap_strength"];
+					modified = true;
+				}
 
-				if ((!element.contains("pbr") || element["pbr"]) && name_match)
+				if (element.contains("pbr") && !element["pbr"]) {
+					bslsp->shaderFlags2 &= ~SLSF2_UNUSED01; // "PBR FLAG"
+				}
+				else if (name_match)
 				{
 
 					modified = true;
