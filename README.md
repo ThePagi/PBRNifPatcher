@@ -61,8 +61,9 @@ Example config entry that sets PBR with parallax for meshes using "texture_name"
 * "smooth_angle": 0.0-180.0 -> smooths the normals (and removes doubled vertices) where the angle is less extreme (flatter) than the given number in degrees, useful when sharp edges look bad with high resolution textures
 * "delete": true -> removes the matched mesh, useful for example for ugly decals that even PBR cannot save
 * "cubemap": "textures\\cubemaps\\copper_e.dds" -> sets a cubemap path
-* "env_map_scale": 2.0: sets the environment mapping scale
-* "env_mapping": true: forces the shader type to env mapping, does nothing if false
+* "env_map_scale": 2.0 -> sets the environment mapping scale
+* "env_mapping": true -> forces the shader type to env mapping, does nothing if false
+* "parallax_envmap_strength": 1 -> sets the parallax envmap strength property
 * "emissive_scale": 1 -> sets a multiplier for the emissive color
 * "emissive_color": [1,1,1,1] -> sets the emissive color which multiplies color from the emissive texture
 * "uv_scale": 2 -> sets the uv scale, good for objects with badly scaled uvs such as rocks
